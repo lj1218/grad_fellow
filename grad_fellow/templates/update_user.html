@@ -1,0 +1,18 @@
+{% block content %}
+  <h1>Update User</h1>
+  <form action="/user/{{ name }}" method="post" name="update_user">
+      <input id="_method" name="_method" type="hidden" value="put">
+      {{ form.csrf_token }}
+      <p>
+          {{ form.id.label }} : {{ uid }}<br>
+      </p>
+      <p>
+          {{ form.name.label }} : {{ name }} <br>
+      </p>
+      <p>
+          {{ form.password.label }}<br>
+          {{ form.password(size=80) }}<br>
+      </p>
+      <p><input type="submit" value="Submit"></p>
+  </form>
+{% endblock %}

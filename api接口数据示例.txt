@@ -1,0 +1,24 @@
+HTTP GET
+
+1. country
+req : http://127.0.0.1:5000/country
+resp: [{"id": 3, "name": "American"}, {"id": 1, "name": "China"}, {"id": 2, "name": "Japan"}]
+
+req : http://127.0.0.1:5000/country/1
+resp: {"id": 1, "name": "China"}
+
+
+2. position
+req : http://127.0.0.1:5000/position
+resp: [{"id": 1, "name": "Software engineer"}, {"id": 2, "name": "Test"}]
+
+req : http://127.0.0.1:5000/position/1
+resp: {"id": 1, "name": "Software engineer"}
+
+
+3.user info
+req : http://127.0.0.1:5000/userinfo
+resp: [{"id": 1, "name": "lj", "first_name": "j", "last_name": "l", "position": "Software engineer", "company": "xyz", "nationality": "China", "tobe_contacted": "True", "skills_have": "Golang && Java && Python && C...", "skills_learned": "jipfqwe efqeqf", "skills_recommend": "fewqgqe", "skills_roles_in_company": "fqeqgg", "skills_tasks_auto": "fqeqeqedfdafda", "skills_tasks_collab": "ffqfdddddddddd", "cc_competitiveness": "dsfdqfdf", "cc_desc_by_colleagues": "jfiqpjfpeq", "cc_working_approach": "fjjqpifpq", "cc_relationship_with_colleague": "nfinpvqpv", "cc_relationship_with_mgr": "jvnqipnv"}, {"id": 2, "name": "lj2", "first_name": "j", "last_name": "l", "position": "Software engineer", "company": "xyz", "nationality": "China", "tobe_contacted": "True", "skills_have": "Golang && Java && Python && C...", "skills_learned": "jipfqwe efqeqf", "skills_recommend": "fewqgqe", "skills_roles_in_company": "fqeqgg", "skills_tasks_auto": "fqeqeqedfdafda", "skills_tasks_collab": "ffqfdddddddddd", "cc_competitiveness": "dsfdqfdf", "cc_desc_by_colleagues": "jfiqpjfpeq", "cc_working_approach": "fjjqpifpq", "cc_relationship_with_colleague": "nfinpvqpv", "cc_relationship_with_mgr": "jvnqipnv"}]
+
+req : http://127.0.0.1:5000/userinfo/lj
+resp: {"id": 1, "name": "lj", "first_name": "j", "last_name": "l", "position": "Software engineer", "company": "xyz", "nationality": "China", "tobe_contacted": "True", "skills_have": "Golang && Java && Python && C...", "skills_learned": "jipfqwe efqeqf", "skills_recommend": "fewqgqe", "skills_roles_in_company": "fqeqgg", "skills_tasks_auto": "fqeqeqedfdafda", "skills_tasks_collab": "ffqfdddddddddd", "cc_competitiveness": "dsfdqfdf", "cc_desc_by_colleagues": "jfiqpjfpeq", "cc_working_approach": "fjjqpifpq", "cc_relationship_with_colleague": "nfinpvqpv", "cc_relationship_with_mgr": "jvnqipnv"}

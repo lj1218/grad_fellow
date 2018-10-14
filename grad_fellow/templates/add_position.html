@@ -1,0 +1,11 @@
+{% block content %}
+  <h1>Add Position</h1>
+  <form action="/position" method="post" name="add_position">
+      {{ form.csrf_token }}
+      <p>
+          {{ form.name.label }}<br>
+          {{ form.name(size=80) }}<br>
+      </p>
+      <p><input type="submit" value="Submit"></p>
+  </form>
+{% endblock %}

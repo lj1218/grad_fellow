@@ -1,0 +1,48 @@
+数据库表：
+1、国家（country）
+id: 国家id
+name: 国家名称
+
+2、职位（position）
+id: 职位id
+name: 职位名称
+
+3、用户（user）
+id: 用户id（主键，系统唯一，非自增，用于用户登陆）
+password: 密码
+
+4、用户信息（user_info）
+id: 自增id
+name: 用户名，用于登录系统（外键 user.name）
+
+## Basic Info
+first_name: 名
+last_name: 姓
+position: 当前职位
+company: 当前就职公司
+nationality: 国籍
+tobe_contacted: 是否愿意被联系
+
+## Skills
+skills_have: 拥有的技能
+skills_learned: 学习到的技能
+skills_recommend: 推荐的技能
+skills_roles_in_company: 工作中需要沟通的角色
+skills_tasks_auto: 自主完成的任务
+skills_tasks_collab: 协作完成的任务
+
+## Company Culture
+cc_competitiveness: 
+cc_desc_by_colleagues:
+cc_working_approach:
+cc_relationship_with_colleague:
+cc_relationship_with_mgr:
+
+
+用户必须注册并登陆才能填写用户信息表单
+
+
+
+database: grad_fellow
+
+
