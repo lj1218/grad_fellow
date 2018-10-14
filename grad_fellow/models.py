@@ -1,9 +1,7 @@
 # -*- coding:utf-8 -*-
 # models.py
-from flask import request
 from flask_login import UserMixin
 from sqlalchemy.exc import OperationalError
-
 from grad_fellow.acl import check_access_permission
 from . import db
 

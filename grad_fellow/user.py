@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import render_template
+from flask_jwt import jwt_required
 from flask_login import login_required
 from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -107,7 +108,8 @@ class UserResource(Resource):
 
 class UsersResource(Resource):
     method_decorators = {
-        'post': [login_required]
+        'post': [login_required],
+        'get': [jwt_required()]
     }
 
     @marshal_with(user_fields)
