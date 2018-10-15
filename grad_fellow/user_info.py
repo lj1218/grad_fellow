@@ -42,32 +42,60 @@ user_info_fields = {
 
 def get_parser():
     parser = reqparse.RequestParser()
-    for argument in [f for f in user_info_fields.keys()][1:]:
+    for argument in [f for f in user_info_fields.keys() if f != 'id']:
         parser.add_argument(argument)
     return parser
 
 
 def new_user_info(username, args):
+    print('type(args): ' + str(type(args)))
+    print(str(args))
+    if args['tobe_contacted'] == 'True':
+        tobe_contacted = True
+    else:
+        tobe_contacted = False
     user_info = UserInfo(
         name=username,
-        first_name=args['first_name'],
-        last_name=args['last_name'],
-        position=args['position'],
-        company=args['company'],
-        nationality=args['nationality'],
-        tobe_contacted=args['tobe_contacted'],
-        skills_have=args['skills_have'],
-        skills_learned=args['skills_learned'],
-        skills_recommend=args['skills_recommend'],
-        skills_roles_in_company=args['skills_roles_in_company'],
-        skills_tasks_auto=args['skills_tasks_auto'],
-        skills_tasks_collab=args['skills_tasks_collab'],
-        cc_competitiveness=args['cc_competitiveness'],
-        cc_desc_by_colleagues=args['cc_desc_by_colleagues'],
-        cc_working_approach=args['cc_working_approach'],
-        cc_relationship_with_colleague=args['cc_relationship_with_colleague'],
-        cc_relationship_with_mgr=args['cc_relationship_with_mgr']
+        first_name=args.get('first_name', ''),
+        last_name=args.get('last_name', ''),
+        position=args.get('position', ''),
+        company=args.get('company', ''),
+        nationality=args.get('nationality', ''),
+        tobe_contacted=tobe_contacted,
+        skills_have=args.get('skills_have', ''),
+        skills_learned=args.get('skills_learned', ''),
+        skills_recommend=args.get('skills_recommend', ''),
+        skills_roles_in_company=args.get('skills_roles_in_company', ''),
+        skills_tasks_auto=args.get('skills_tasks_auto', ''),
+        skills_tasks_collab=args.get('skills_tasks_collab', ''),
+        cc_competitiveness=args.get('cc_competitiveness', ''),
+        cc_desc_by_colleagues=args.get('cc_desc_by_colleagues', ''),
+        cc_working_approach=args.get('cc_working_approach', ''),
+        cc_relationship_with_colleague=args.get('cc_relationship_with_colleague', ''),
+        cc_relationship_with_mgr=args.get('cc_relationship_with_mgr', '')
     )
+    return user_info
+
+
+def update_user_info(user_info, args):
+    _new_user_info = new_user_info(user_info.name, args)
+    user_info.first_name = _new_user_info.first_name
+    user_info.last_name = _new_user_info.last_name
+    user_info.position = _new_user_info.position
+    user_info.company = _new_user_info.company
+    user_info.nationality = _new_user_info.nationality
+    user_info.tobe_contacted = _new_user_info.tobe_contacted
+    user_info.skills_have = _new_user_info.skills_have
+    user_info.skills_learned = _new_user_info.skills_learned
+    user_info.skills_recommend = _new_user_info.skills_recommend
+    user_info.skills_roles_in_company = _new_user_info.skills_roles_in_company
+    user_info.skills_tasks_auto = _new_user_info.skills_tasks_auto
+    user_info.skills_tasks_collab = _new_user_info.skills_tasks_collab
+    user_info.cc_competitiveness = _new_user_info.cc_competitiveness
+    user_info.cc_desc_by_colleagues = _new_user_info.cc_desc_by_colleagues
+    user_info.cc_working_approach = _new_user_info.cc_working_approach
+    user_info.cc_relationship_with_colleague = _new_user_info.cc_relationship_with_colleague
+    user_info.cc_relationship_with_mgr = _new_user_info.cc_relationship_with_mgr
     return user_info
 
 
@@ -92,38 +120,23 @@ class UserInfoResource(Resource):
         return 'delete ' + user_info.name + ' success', 200
 
     @marshal_with(user_info_fields)
-    def put(self, name):
+    def post(self, name):
         # update data
         # see http://www.bjhee.com/flask-ext4.html
         parser = UserInfosResource.get_parser()
         args = parser.parse_args()
-        try:
-            user_info = UserInfo.query.filter_by(name=name).first()
-        except OperationalError:
-            return [], 500
-        print(user_info)
-        if not user_info:
-            return [], 403
-        id_ = user_info.id
-        username = current_identity['identity'][0]
+        user = current_identity
+        username = user.username
         print('UserInfoResource.put - username: ' + username)
-        user_info = new_user_info(username, args)
-        user_info.id = id_
+        user_info = UserInfo.query.filter_by(name=username).first()
+        if user_info is None:
+            user_info = new_user_info(username, args)
+        else:
+            update_user_info(user_info, args)
         print(user_info)
         db.session.add(user_info)
         db.session.commit()
         return user_info, 201
-
-    def post(self, name):
-        parser = reqparse.RequestParser()
-        parser.add_argument('_method')
-        args = parser.parse_args()
-        method = args['_method']
-        if method == 'put':
-            return self.put(name)
-        elif method == 'delete':
-            return self.delete(name)
-        return [], 403
 
 
 class UserInfosResource(Resource):
@@ -160,9 +173,14 @@ class UserInfosResource(Resource):
 
     def post(self):
         args = get_parser().parse_args()
-        username = current_identity['identity'][0]
+        user = current_identity
+        username = user.username
         print('UserInfosResource.post - username: ' + username)
-        user_info = new_user_info(username, args)
+        user_info = UserInfo.query.filter_by(name=username).first()
+        if user_info is None:
+            user_info = new_user_info(username, args)
+        else:
+            update_user_info(user_info, args)
         db.session.add(user_info)
         try:
             db.session.commit()
