@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import render_template
 from flask_jwt import jwt_required
-from flask_login import login_required
 from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
 from sqlalchemy.exc import IntegrityError, OperationalError
 from werkzeug.security import generate_password_hash
@@ -11,27 +10,27 @@ from .forms import AddUserForm, UpdateUserForm
 from .models import User
 
 
-# TODO: 禁止普通用户访问
 @app.route('/add_user')
-@login_required
+@jwt_required()
 def add_user():
     form = AddUserForm()
     return render_template('add_user.html', title='Add User', form=form)
 
 
 @app.route('/update_user/<string:name>')
-@login_required
+@jwt_required()
 def update_user(name):
     form = UpdateUserForm()
-    user = User.query.filter_by(name=name).first()
+    user = abort_if_user_doesnt_exist(name)
     return render_template('update_user.html', title='Update User',
                            form=form, uid=user.id, name=name, role=user.role)
 
 
 @app.route('/delete_user/<string:name>')
-@login_required
+@jwt_required()
 def delete_user(name):
     from flask_wtf import FlaskForm
+    abort_if_user_doesnt_exist(name)
     form = FlaskForm()
     return render_template('delete_user.html', title='Delete User', form=form, name=name)
 
@@ -55,14 +54,14 @@ user_fields = {
 
 class UserResource(Resource):
     method_decorators = {
-        'post': [login_required],
-        'delete': [login_required],
-        'put': [login_required],
+        'get': [jwt_required()],
+        'post': [jwt_required()],
+        'delete': [jwt_required()],
+        'put': [jwt_required()],
     }
 
     @marshal_with(user_fields)
     def get(self, name):
-        print('get ' + str(name))
         user = abort_if_user_doesnt_exist(name)
         return user
 
@@ -108,15 +107,14 @@ class UserResource(Resource):
 
 class UsersResource(Resource):
     method_decorators = {
-        'post': [login_required],
-        'get': [jwt_required()]
+        'get': [jwt_required()],
+        'post': [jwt_required()]
     }
 
     @marshal_with(user_fields)
     def get(self):
-        return User.query.order_by(User.name).all()
+        return User.query.all()
 
-    # TODO: 禁止普通用户访问
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('name')

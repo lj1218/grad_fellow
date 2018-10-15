@@ -22,12 +22,10 @@ def identity(payload):
     from sqlalchemy.exc import OperationalError
     from .models import User, User4Auth, Administrator
 
-    print('identity-payload: ' + str(payload))
     user_id = payload['identity']
     username = user_id[0]
     print('username: ' + username)
     password = user_id[1]
-    print('password: ' + password)
     if not check_access_permission(username):
         return None
     if not password:

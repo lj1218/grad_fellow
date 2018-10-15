@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import render_template
-from flask_login import login_required
+from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -10,23 +10,25 @@ from .models import Position
 
 
 @app.route('/add_position')
-@login_required
+@jwt_required()
 def add_position():
     form = AddPositionForm()
     return render_template('add_position.html', title='Add Position', form=form)
 
 
 @app.route('/update_position/<int:position_id>')
-@login_required
+@jwt_required()
 def update_position(position_id):
+    abort_if_position_doesnt_exist(position_id)
     form = UpdatePositionForm()
     return render_template('update_position.html', title='Update Position', form=form, position_id=position_id)
 
 
 @app.route('/delete_position/<int:position_id>')
-@login_required
+@jwt_required()
 def delete_position(position_id):
     from flask_wtf import FlaskForm
+    abort_if_position_doesnt_exist(position_id)
     form = FlaskForm()
     return render_template('delete_position.html', title='Delete Position', form=form, position_id=position_id)
 
@@ -52,14 +54,13 @@ parser.add_argument('name')
 
 class PositionResource(Resource):
     method_decorators = {
-        'post': [login_required],
-        'delete': [login_required],
-        'put': [login_required],
+        'post': [jwt_required()],
+        'delete': [jwt_required()],
+        'put': [jwt_required()],
     }
 
     @marshal_with(position_fields)
     def get(self, position_id):
-        print('get ' + str(position_id))
         position = abort_if_position_doesnt_exist(position_id)
         return position
 
@@ -102,7 +103,7 @@ class PositionResource(Resource):
 
 class PositionsResource(Resource):
     method_decorators = {
-        'post': [login_required]
+        'post': [jwt_required()]
     }
 
     @marshal_with(position_fields)

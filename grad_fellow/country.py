@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask import render_template
-from flask_login import login_required
+from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -10,23 +10,25 @@ from .models import Country
 
 
 @app.route('/add_country')
-@login_required
+@jwt_required()
 def add_country():
     form = AddCountryForm()
     return render_template('add_country.html', title='Add Country', form=form)
 
 
 @app.route('/update_country/<int:country_id>')
-@login_required
+@jwt_required()
 def update_country(country_id):
+    abort_if_country_doesnt_exist(country_id)
     form = UpdateCountryForm()
     return render_template('update_country.html', title='Update Country', form=form, country_id=country_id)
 
 
 @app.route('/delete_country/<int:country_id>')
-@login_required
+@jwt_required()
 def delete_country(country_id):
     from flask_wtf import FlaskForm
+    abort_if_country_doesnt_exist(country_id)
     form = FlaskForm()
     return render_template('delete_country.html', title='Delete Country', form=form, country_id=country_id)
 
@@ -52,14 +54,13 @@ parser.add_argument('name')
 
 class CountryResource(Resource):
     method_decorators = {
-        'post': [login_required],
-        'delete': [login_required],
-        'put': [login_required],
+        'post': [jwt_required()],
+        'delete': [jwt_required()],
+        'put': [jwt_required()],
     }
 
     @marshal_with(country_fields)
     def get(self, country_id):
-        print('get ' + str(country_id))
         country = abort_if_country_doesnt_exist(country_id)
         return country
 
@@ -102,12 +103,12 @@ class CountryResource(Resource):
 
 class CountriesResource(Resource):
     method_decorators = {
-        'post': [login_required]
+        'post': [jwt_required()]
     }
 
     @marshal_with(country_fields)
     def get(self):
-        return Country.query.order_by(Country.name).all()
+        return Country.query.all()
 
     def post(self):
         args = parser.parse_args()

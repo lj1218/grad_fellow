@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 # models.py
-from flask_login import UserMixin
 from sqlalchemy.exc import OperationalError
-from grad_fellow.acl import check_access_permission
 from . import db
 
 
-class User4Auth(UserMixin):
+class User4Auth(object):
 
     def __init__(self, username):
         self.username = username
         self.id = self.get_id()
+
+    def __repr__(self):
+        return '<User4Auth %r>' % self.username
 
     def get_id(self):
         user = None
@@ -33,32 +34,6 @@ class User4Auth(UserMixin):
             return verify_admin_password(self.username, password)
         else:
             return verify_user_password(self.username, password)
-
-    @staticmethod
-    def get(user_id):
-        """try to return user_id corresponding User object.
-        This method is used by load_user callback function
-        """
-        username = user_id[0]
-        password = user_id[1]
-        if not check_access_permission(username):
-            return None
-        if not password:
-            return None
-        user = None
-        if username == 'admin':
-            try:
-                user = Administrator.query.filter_by(name=username).first()
-            except OperationalError as e:
-                print(e)
-        else:
-            try:
-                user = User.query.filter_by(name=username).first()
-            except OperationalError as e:
-                print(e)
-        if user and password == user.password:
-            return User4Auth(username)
-        return None
 
 
 class Administrator(db.Model):

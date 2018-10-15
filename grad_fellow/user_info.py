@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask_login import login_required
+from flask_jwt import jwt_required, current_identity
 from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -19,7 +19,7 @@ def abort_if_user_info_doesnt_exist(name):
 
 user_info_fields = {
     'id': fields.Integer,
-    'name': fields.String,
+    # 'name': fields.String,
     'first_name': fields.String,
     'last_name': fields.String,
     'position': fields.String,
@@ -47,9 +47,9 @@ def get_parser():
     return parser
 
 
-def new_user_info(args):
+def new_user_info(username, args):
     user_info = UserInfo(
-        name=args['name'],
+        name=username,
         first_name=args['first_name'],
         last_name=args['last_name'],
         position=args['position'],
@@ -73,14 +73,14 @@ def new_user_info(args):
 
 class UserInfoResource(Resource):
     method_decorators = {
-        'post': [login_required],
-        'delete': [login_required],
-        'put': [login_required],
+        'get': [jwt_required()],
+        'post': [jwt_required()],
+        'delete': [jwt_required()],
+        'put': [jwt_required()],
     }
 
     @marshal_with(user_info_fields)
     def get(self, name):
-        print('get ' + str(name))
         user_info = abort_if_user_info_doesnt_exist(name)
         return user_info
 
@@ -105,7 +105,9 @@ class UserInfoResource(Resource):
         if not user_info:
             return [], 403
         id_ = user_info.id
-        user_info = new_user_info(args)
+        username = current_identity['identity'][0]
+        print('UserInfoResource.put - username: ' + username)
+        user_info = new_user_info(username, args)
         user_info.id = id_
         print(user_info)
         db.session.add(user_info)
@@ -126,7 +128,7 @@ class UserInfoResource(Resource):
 
 class UserInfosResource(Resource):
     method_decorators = {
-        'post': [login_required]
+        'post': [jwt_required()]
     }
 
     @marshal_with(user_info_fields)
@@ -158,7 +160,9 @@ class UserInfosResource(Resource):
 
     def post(self):
         args = get_parser().parse_args()
-        user_info = new_user_info(args)
+        username = current_identity['identity'][0]
+        print('UserInfosResource.post - username: ' + username)
+        user_info = new_user_info(username, args)
         db.session.add(user_info)
         try:
             db.session.commit()
