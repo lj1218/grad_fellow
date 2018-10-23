@@ -1,47 +1,13 @@
 # -*- coding:utf-8 -*-
-from flask import render_template
+"""RESTful resource: Position."""
 from flask_jwt import jwt_required
-from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
+from flask_restful import (Resource, abort, fields, marshal, marshal_with,
+                           reqparse)
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from . import db, app
-from .forms import AddPositionForm, UpdatePositionForm
-from .models import Position
-
-
-@app.route('/add_position')
-@jwt_required()
-def add_position():
-    form = AddPositionForm()
-    return render_template('add_position.html', title='Add Position', form=form)
-
-
-@app.route('/update_position/<int:position_id>')
-@jwt_required()
-def update_position(position_id):
-    abort_if_position_doesnt_exist(position_id)
-    form = UpdatePositionForm()
-    return render_template('update_position.html', title='Update Position', form=form, position_id=position_id)
-
-
-@app.route('/delete_position/<int:position_id>')
-@jwt_required()
-def delete_position(position_id):
-    from flask_wtf import FlaskForm
-    abort_if_position_doesnt_exist(position_id)
-    form = FlaskForm()
-    return render_template('delete_position.html', title='Delete Position', form=form, position_id=position_id)
-
-
-def abort_if_position_doesnt_exist(position_id):
-    try:
-        position = Position.query.filter_by(id=position_id).first()
-        if not position:
-            abort(404, message="position_id {} doesn't exist".format(position_id))
-        return position
-    except OperationalError:
-        abort(500, message='_mysql_exceptions.OperationalError')
-
+from ..common.abort import abort_if_position_doesnt_exist
+from ..db import db
+from ..models import Position
 
 position_fields = {
     'id': fields.Integer,
@@ -53,6 +19,8 @@ parser.add_argument('name')
 
 
 class PositionResource(Resource):
+    """Position Resource."""
+
     method_decorators = {
         'post': [jwt_required()],
         'delete': [jwt_required()],
@@ -61,11 +29,13 @@ class PositionResource(Resource):
 
     @marshal_with(position_fields)
     def get(self, position_id):
-        position = abort_if_position_doesnt_exist(position_id)
+        """Get method."""
+        position = abort_if_position_doesnt_exist(abort, position_id)
         return position
 
     def delete(self, position_id):
-        position = abort_if_position_doesnt_exist(position_id)
+        """Delete method."""
+        position = abort_if_position_doesnt_exist(abort, position_id)
         db.session.delete(position)
         db.session.commit()
         print('delete ' + str(position_id))
@@ -73,8 +43,8 @@ class PositionResource(Resource):
 
     @marshal_with(position_fields)
     def put(self, position_id):
-        # update data
-        # see http://www.bjhee.com/flask-ext4.html
+        """Put method."""
+        # Update data (see http://www.bjhee.com/flask-ext4.html)
         args = parser.parse_args()
         try:
             position = Position.query.filter_by(id=position_id).first()
@@ -90,6 +60,7 @@ class PositionResource(Resource):
         return position, 201
 
     def post(self, position_id):
+        """Post method."""
         parser2 = reqparse.RequestParser()
         parser2.add_argument('_method')
         args = parser2.parse_args()
@@ -102,15 +73,19 @@ class PositionResource(Resource):
 
 
 class PositionsResource(Resource):
+    """Positions Resource."""
+
     method_decorators = {
         'post': [jwt_required()]
     }
 
     @marshal_with(position_fields)
     def get(self):
+        """Get method."""
         return Position.query.order_by(Position.name).all()
 
     def post(self):
+        """Post method."""
         args = parser.parse_args()
         position = Position(name=args['name'])
         db.session.add(position)
@@ -118,7 +93,8 @@ class PositionsResource(Resource):
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + position.name + "' for key 'name'"}, 201
+            return {'error': "Duplicate entry '" + position.name +
+                             "' for key 'name'"}, 201
         except OperationalError as e:
             print(e)
             return {'error': 'OperationalError'}, 201

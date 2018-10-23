@@ -1,21 +1,13 @@
 # -*- coding:utf-8 -*-
-from flask_jwt import jwt_required, current_identity
-from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
+"""RESTful resource: UserInfo."""
+from flask_jwt import current_identity, jwt_required
+from flask_restful import (Resource, abort, fields, marshal, marshal_with,
+                           reqparse)
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from . import db
-from .models import UserInfo
-
-
-def abort_if_user_info_doesnt_exist(name):
-    try:
-        user_info = UserInfo.query.filter_by(name=name).first()
-        if not user_info:
-            abort(404, message="user_info {} doesn't exist".format(name))
-        return user_info
-    except OperationalError:
-        abort(500, message='_mysql_exceptions.OperationalError')
-
+from ..common.abort import abort_if_user_info_doesnt_exist
+from ..db import db
+from ..models import UserInfo
 
 user_info_fields = {
     'id': fields.Integer,
@@ -41,65 +33,16 @@ user_info_fields = {
 
 
 def get_parser():
+    """Get parser."""
     parser = reqparse.RequestParser()
     for argument in [f for f in user_info_fields.keys() if f != 'id']:
         parser.add_argument(argument)
     return parser
 
 
-def new_user_info(username, args):
-    print('type(args): ' + str(type(args)))
-    print(str(args))
-    if args['tobe_contacted'] == 'True':
-        tobe_contacted = True
-    else:
-        tobe_contacted = False
-    user_info = UserInfo(
-        name=username,
-        first_name=args.get('first_name', ''),
-        last_name=args.get('last_name', ''),
-        position=args.get('position', ''),
-        company=args.get('company', ''),
-        nationality=args.get('nationality', ''),
-        tobe_contacted=tobe_contacted,
-        skills_have=args.get('skills_have', ''),
-        skills_learned=args.get('skills_learned', ''),
-        skills_recommend=args.get('skills_recommend', ''),
-        skills_roles_in_company=args.get('skills_roles_in_company', ''),
-        skills_tasks_auto=args.get('skills_tasks_auto', ''),
-        skills_tasks_collab=args.get('skills_tasks_collab', ''),
-        cc_competitiveness=args.get('cc_competitiveness', ''),
-        cc_desc_by_colleagues=args.get('cc_desc_by_colleagues', ''),
-        cc_working_approach=args.get('cc_working_approach', ''),
-        cc_relationship_with_colleague=args.get('cc_relationship_with_colleague', ''),
-        cc_relationship_with_mgr=args.get('cc_relationship_with_mgr', '')
-    )
-    return user_info
-
-
-def update_user_info(user_info, args):
-    _new_user_info = new_user_info(user_info.name, args)
-    user_info.first_name = _new_user_info.first_name
-    user_info.last_name = _new_user_info.last_name
-    user_info.position = _new_user_info.position
-    user_info.company = _new_user_info.company
-    user_info.nationality = _new_user_info.nationality
-    user_info.tobe_contacted = _new_user_info.tobe_contacted
-    user_info.skills_have = _new_user_info.skills_have
-    user_info.skills_learned = _new_user_info.skills_learned
-    user_info.skills_recommend = _new_user_info.skills_recommend
-    user_info.skills_roles_in_company = _new_user_info.skills_roles_in_company
-    user_info.skills_tasks_auto = _new_user_info.skills_tasks_auto
-    user_info.skills_tasks_collab = _new_user_info.skills_tasks_collab
-    user_info.cc_competitiveness = _new_user_info.cc_competitiveness
-    user_info.cc_desc_by_colleagues = _new_user_info.cc_desc_by_colleagues
-    user_info.cc_working_approach = _new_user_info.cc_working_approach
-    user_info.cc_relationship_with_colleague = _new_user_info.cc_relationship_with_colleague
-    user_info.cc_relationship_with_mgr = _new_user_info.cc_relationship_with_mgr
-    return user_info
-
-
 class UserInfoResource(Resource):
+    """UserInfo Resource."""
+
     method_decorators = {
         'get': [jwt_required()],
         'post': [jwt_required()],
@@ -109,11 +52,13 @@ class UserInfoResource(Resource):
 
     @marshal_with(user_info_fields)
     def get(self, name):
-        user_info = abort_if_user_info_doesnt_exist(name)
+        """Get method."""
+        user_info = abort_if_user_info_doesnt_exist(abort, name)
         return user_info
 
     def delete(self, name):
-        user_info = abort_if_user_info_doesnt_exist(name)
+        """Delete method."""
+        user_info = abort_if_user_info_doesnt_exist(abort, name)
         db.session.delete(user_info)
         db.session.commit()
         print('delete ' + str(name))
@@ -121,8 +66,8 @@ class UserInfoResource(Resource):
 
     @marshal_with(user_info_fields)
     def post(self, name):
-        # update data
-        # see http://www.bjhee.com/flask-ext4.html
+        """Post method."""
+        # Update data (see http://www.bjhee.com/flask-ext4.html)
         parser = UserInfosResource.get_parser()
         args = parser.parse_args()
         user = current_identity
@@ -130,9 +75,9 @@ class UserInfoResource(Resource):
         print('UserInfoResource.put - username: ' + username)
         user_info = UserInfo.query.filter_by(name=username).first()
         if user_info is None:
-            user_info = new_user_info(username, args)
+            user_info = _new_user_info(username, args)
         else:
-            update_user_info(user_info, args)
+            _update_user_info(user_info, args)
         print(user_info)
         db.session.add(user_info)
         db.session.commit()
@@ -140,12 +85,15 @@ class UserInfoResource(Resource):
 
 
 class UserInfosResource(Resource):
+    """UserInfos Resource."""
+
     method_decorators = {
         'post': [jwt_required()]
     }
 
     @marshal_with(user_info_fields)
     def get(self):
+        """Get method."""
         parser = reqparse.RequestParser()
         parser.add_argument('nationality', type=str)
         parser.add_argument('position', type=str)
@@ -172,22 +120,79 @@ class UserInfosResource(Resource):
         return user_info
 
     def post(self):
+        """Post method."""
         args = get_parser().parse_args()
         user = current_identity
         username = user.username
         print('UserInfosResource.post - username: ' + username)
         user_info = UserInfo.query.filter_by(name=username).first()
         if user_info is None:
-            user_info = new_user_info(username, args)
+            user_info = _new_user_info(username, args)
         else:
-            update_user_info(user_info, args)
+            _update_user_info(user_info, args)
         db.session.add(user_info)
         try:
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + user_info.name + "' for key 'name'"}, 201
+            return {'error': "Duplicate entry '" + user_info.name +
+                             "' for key 'name'"}, 201
         except OperationalError as e:
             print(e)
             return {'error': 'OperationalError'}, 201
         return marshal(user_info, user_info_fields), 201
+
+
+def _new_user_info(username, args):
+    """Create UserInfo instance."""
+    print('type(args): ' + str(type(args)))
+    print(str(args))
+    if args['tobe_contacted'] == 'True':
+        tobe_contacted = True
+    else:
+        tobe_contacted = False
+    user_info = UserInfo(
+        name=username,
+        first_name=args.get('first_name', ''),
+        last_name=args.get('last_name', ''),
+        position=args.get('position', ''),
+        company=args.get('company', ''),
+        nationality=args.get('nationality', ''),
+        tobe_contacted=tobe_contacted,
+        skills_have=args.get('skills_have', ''),
+        skills_learned=args.get('skills_learned', ''),
+        skills_recommend=args.get('skills_recommend', ''),
+        skills_roles_in_company=args.get('skills_roles_in_company', ''),
+        skills_tasks_auto=args.get('skills_tasks_auto', ''),
+        skills_tasks_collab=args.get('skills_tasks_collab', ''),
+        cc_competitiveness=args.get('cc_competitiveness', ''),
+        cc_desc_by_colleagues=args.get('cc_desc_by_colleagues', ''),
+        cc_working_approach=args.get('cc_working_approach', ''),
+        cc_relationship_with_colleague=args.get(
+            'cc_relationship_with_colleague', ''),
+        cc_relationship_with_mgr=args.get('cc_relationship_with_mgr', '')
+    )
+    return user_info
+
+
+def _update_user_info(old, args):
+    """Update old UserInfo instance with args."""
+    new = _new_user_info(old.name, args)
+    old.first_name = new.first_name
+    old.last_name = new.last_name
+    old.position = new.position
+    old.company = new.company
+    old.nationality = new.nationality
+    old.tobe_contacted = new.tobe_contacted
+    old.skills_have = new.skills_have
+    old.skills_learned = new.skills_learned
+    old.skills_recommend = new.skills_recommend
+    old.skills_roles_in_company = new.skills_roles_in_company
+    old.skills_tasks_auto = new.skills_tasks_auto
+    old.skills_tasks_collab = new.skills_tasks_collab
+    old.cc_competitiveness = new.cc_competitiveness
+    old.cc_desc_by_colleagues = new.cc_desc_by_colleagues
+    old.cc_working_approach = new.cc_working_approach
+    old.cc_relationship_with_colleague = new.cc_relationship_with_colleague
+    old.cc_relationship_with_mgr = new.cc_relationship_with_mgr
+    return old

@@ -1,0 +1,3 @@
+graft grad_fellow/static
+graft grad_fellow/templates
+global-exclude *.pyc

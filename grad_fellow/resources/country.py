@@ -1,47 +1,13 @@
 # -*- coding:utf-8 -*-
-from flask import render_template
+"""RESTful resource: Country."""
 from flask_jwt import jwt_required
-from flask_restful import Resource, reqparse, marshal, marshal_with, fields, abort
+from flask_restful import (Resource, abort, fields, marshal, marshal_with,
+                           reqparse)
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from . import db, app
-from .forms import AddCountryForm, UpdateCountryForm
-from .models import Country
-
-
-@app.route('/add_country')
-@jwt_required()
-def add_country():
-    form = AddCountryForm()
-    return render_template('add_country.html', title='Add Country', form=form)
-
-
-@app.route('/update_country/<int:country_id>')
-@jwt_required()
-def update_country(country_id):
-    abort_if_country_doesnt_exist(country_id)
-    form = UpdateCountryForm()
-    return render_template('update_country.html', title='Update Country', form=form, country_id=country_id)
-
-
-@app.route('/delete_country/<int:country_id>')
-@jwt_required()
-def delete_country(country_id):
-    from flask_wtf import FlaskForm
-    abort_if_country_doesnt_exist(country_id)
-    form = FlaskForm()
-    return render_template('delete_country.html', title='Delete Country', form=form, country_id=country_id)
-
-
-def abort_if_country_doesnt_exist(country_id):
-    try:
-        country = Country.query.filter_by(id=country_id).first()
-        if not country:
-            abort(404, message="country_id {} doesn't exist".format(country_id))
-        return country
-    except OperationalError:
-        abort(500, message='_mysql_exceptions.OperationalError')
-
+from ..common.abort import abort_if_country_doesnt_exist
+from ..db import db
+from ..models import Country
 
 country_fields = {
     'id': fields.Integer,
@@ -53,6 +19,8 @@ parser.add_argument('name')
 
 
 class CountryResource(Resource):
+    """Country Resource."""
+
     method_decorators = {
         'post': [jwt_required()],
         'delete': [jwt_required()],
@@ -61,11 +29,13 @@ class CountryResource(Resource):
 
     @marshal_with(country_fields)
     def get(self, country_id):
-        country = abort_if_country_doesnt_exist(country_id)
+        """Get method."""
+        country = abort_if_country_doesnt_exist(abort, country_id)
         return country
 
     def delete(self, country_id):
-        country = abort_if_country_doesnt_exist(country_id)
+        """Delete method."""
+        country = abort_if_country_doesnt_exist(abort, country_id)
         db.session.delete(country)
         db.session.commit()
         print('delete ' + str(country_id))
@@ -73,8 +43,8 @@ class CountryResource(Resource):
 
     @marshal_with(country_fields)
     def put(self, country_id):
-        # update data
-        # see http://www.bjhee.com/flask-ext4.html
+        """Put method."""
+        # Update data (see http://www.bjhee.com/flask-ext4.html)
         args = parser.parse_args()
         try:
             country = Country.query.filter_by(id=country_id).first()
@@ -90,6 +60,7 @@ class CountryResource(Resource):
         return country, 201
 
     def post(self, country_id):
+        """Post method."""
         parser2 = reqparse.RequestParser()
         parser2.add_argument('_method')
         args = parser2.parse_args()
@@ -102,15 +73,19 @@ class CountryResource(Resource):
 
 
 class CountriesResource(Resource):
+    """Countries Resource."""
+
     method_decorators = {
         'post': [jwt_required()]
     }
 
     @marshal_with(country_fields)
     def get(self):
+        """Get method."""
         return Country.query.all()
 
     def post(self):
+        """Post method."""
         args = parser.parse_args()
         country = Country(name=args['name'])
         db.session.add(country)
@@ -118,7 +93,8 @@ class CountriesResource(Resource):
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + country.name + "' for key 'name'"}, 201
+            return {'error': "Duplicate entry '" + country.name +
+                             "' for key 'name'"}, 201
         except OperationalError as e:
             print(e)
             return {'error': 'OperationalError'}, 201

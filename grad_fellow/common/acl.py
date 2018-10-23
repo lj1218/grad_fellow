@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
+"""Access control list."""
 from flask import request
-
 
 rules_forbidden = {
     'admin': {
@@ -46,6 +46,12 @@ rules_forbidden_with_path_var = {
 
 
 def check_access_permission(user):
+    """Check access permission.
+
+    :param user: user name
+    :return: True - Allow
+             False - Deny
+    """
     print('request.path: ' + request.path)
     print('request.url: ' + request.url)
     print('request.method: ' + request.method)
@@ -60,7 +66,8 @@ def check_access_permission(user):
     if forbidden_paths and request.path in forbidden_paths:
         return False
 
-    forbidden_paths_with_var = rules_forbidden_with_path_var.get(user_in_rules).get(request.method)
+    forbidden_paths_with_var = rules_forbidden_with_path_var.get(
+        user_in_rules).get(request.method)
     # When http method not in rules, deny it.
     if forbidden_paths_with_var is None:
         return False
