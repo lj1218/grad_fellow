@@ -6,36 +6,34 @@
 
 {% block content %}
     {% if g.user %}
-        {% if g.user %}
-            {% if items %}
-                <br>
-                <table id="{{ table_id }}" class="display cell-border compact" data-order='[[ 0, "desc" ]]'
-                       data-page-length='5'>
-                    <thead>
+        {% if items %}
+            <br>
+            <table id="{{ table_id }}" class="display cell-border compact" data-order='[[ 0, "desc" ]]'
+                   data-page-length='5'>
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
                     <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Update</th>
-                        <th>Delete</th>
+                        <td>{{ item['id'] }}</td>
+                        <td>{{ item['name'] }}</td>
+                        <td><a class="action" href="javascript:void(0)"
+                               onclick="update('{{ item['id'] }}', '{{ item['name'] }}')">Edit</a>
+                        </td>
+                        <td><a class="action" href="javascript:void(0)"
+                               onclick="delete_('{{ item['id'] }}', '{{ item['name'] }}')">Delete</a>
+                        </td>
                     </tr>
-                    </thead>
-                    <tbody>
-                    {% for item in items %}
-                        <tr>
-                            <td>{{ item['id'] }}</td>
-                            <td>{{ item['name'] }}</td>
-                            <td><a class="action" href="javascript:void(0)"
-                                   onclick="update('{{ item['id'] }}', '{{ item['name'] }}')">Edit</a>
-                            </td>
-                            <td><a class="action" href="javascript:void(0)"
-                                   onclick="delete_('{{ item['id'] }}', '{{ item['name'] }}')">Delete</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                <hr>
-            {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <hr>
         {% endif %}
 
         <div>
