@@ -41,23 +41,36 @@ class PositionResource(Resource):
         print('delete ' + str(position_id))
         return 'delete ' + position.name + ' success', 200
 
-    @marshal_with(position_fields)
     def put(self, position_id):
         """Put method."""
         # Update data (see http://www.bjhee.com/flask-ext4.html)
         args = parser.parse_args()
+        new_name = args['name']
         try:
             position = Position.query.filter_by(id=position_id).first()
+            position_ = Position.query.filter_by(name=new_name).first()
         except OperationalError:
             return [], 500
         print(position)
         if not position:
             return [], 403
-        position.name = args['name']
+        if position_:
+            return {'error': "Position '" + new_name +
+                             "' already exists"}, 409
+        position.name = new_name
         print(position)
-        db.session.add(position)
-        db.session.commit()
-        return position, 201
+        try:
+            db.session.add(position)
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return {'error': "Position '" + new_name +
+                             "' already exists"}, 409
+        except OperationalError as e:
+            print(e)
+            return {'error': 'OperationalError'}, 500
+
+        return marshal(position, position_fields), 201
 
     def post(self, position_id):
         """Post method."""
@@ -88,14 +101,14 @@ class PositionsResource(Resource):
         """Post method."""
         args = parser.parse_args()
         position = Position(name=args['name'])
-        db.session.add(position)
         try:
+            db.session.add(position)
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + position.name +
-                             "' for key 'name'"}, 201
+            return {'error': "Position '" + position.name +
+                             "' already exists"}, 409
         except OperationalError as e:
             print(e)
-            return {'error': 'OperationalError'}, 201
+            return {'error': 'OperationalError'}, 500
         return marshal(position, position_fields), 201

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Log In{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <form id="login">
+        <label for="username">Username</label>
+        <input name="username" id="username" required>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" required>
+        <input type="submit" value="Log In">
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script src="{{ url_for('static', filename='jquery/jquery-3.3.1.min.js') }}"></script>
+    <script>
+        function loginSubmit(ev) {
+            ev.preventDefault();
+            $.ajax({
+                {#async: false,#}
+                method: 'POST',
+                url: '/login',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                }),
+                dataType: 'json',
+                error: loginError,
+            }).done(loginSuccess);
+        }
+
+        function loginSuccess(data) {
+            localStorage.setItem('access_token', data.access_token);
+            loginWebConsole();
+        }
+
+        function loginError(jqXHR, textStatus, errorThrown) {
+            loginWebConsoleError(jqXHR, textStatus, errorThrown);
+            loginWebConsole();
+        }
+
+        function loginWebConsole() {
+            $.ajax({
+                method: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                }),
+                dataType: 'json',
+                error: loginWebConsoleError,
+            }).done(loginWebConsoleSuccess);
+        }
+
+        function loginWebConsoleSuccess(data) {
+            if (data.status === 0) {
+                location.assign(data.next);
+            } else {
+                alert(data.error);
+            }
+        }
+
+        function loginWebConsoleError(jqXHR, textStatus, errorThrown) {
+            let rt = JSON.parse(jqXHR.responseText);
+            if (rt.status) {
+                alert(rt.error);
+            }
+        }
+
+        $('#login').on('submit', loginSubmit);
+    </script>
+{% endblock %}

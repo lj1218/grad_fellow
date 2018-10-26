@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h2>{% block title %}User Management{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+    {% if g.user %}
+        {% if g.user %}
+            {% if users %}
+                <br>
+                <table id="userTable" class="display cell-border compact" data-order='[[ 0, "desc" ]]'
+                       data-page-length='5'>
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Update</th>
+                        <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user['id'] }}</td>
+                            <td>{{ user['name'] }}</td>
+                            <td><a class="action" href="javascript:void(0)" onclick="updateUser('{{ user['name'] }}')">Edit</a>
+                            </td>
+                            <td><a class="action" href="javascript:void(0)" onclick="deleteUser('{{ user['name'] }}')">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+            {% endif %}
+        {% endif %}
+
+        <div>
+            <br>
+            <button id="manageUser" class="button button4" type="button">Add User</button>
+
+            <form id="addUser">
+                <label for="username">Username</label>
+                <input name="username" id="username" required>
+                <label for="password">Password</label>
+                {# <input type="password" name="password" id="password" required> #}
+                <input name="password" id="password" required>
+                <input class="button button4" type="submit" value="Create">
+            </form>
+
+            <hr>
+            <br>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block script %}
+    <script src="{{ url_for('static', filename='jquery/jquery-3.3.1.min.js') }}"></script>
+
+    {# https://datatables.net/ #}
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static', filename='DataTables/1.10.19/jquery.dataTables.css') }}">
+    <script type="text/javascript" charset="utf8"
+            src="{{ url_for('static', filename='DataTables/1.10.19/jquery.dataTables.js') }}"></script>
+
+    <script>
+        function addUser(ev) {
+            ev.preventDefault();
+            $.ajax({
+                {#async: false,#}
+                method: 'POST',
+                url: '/user',
+                contentType: 'application/json; charset=utf-8',
+                headers: {Authorization: 'JWT ' + localStorage.getItem('access_token')},
+                data: JSON.stringify({
+                    name: $('#username').val(),
+                    password: $('#password').val()
+                }),
+                dataType: 'json',
+                error: ajaxError,
+            }).done(ajaxSuccess);
+        }
+
+        function ajaxSuccess(data) {
+            console.log(data.toString());
+            location.assign('{{ url_for('user.manage') }}');
+        }
+
+        function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error(jqXHR.responseText);
+            alert(JSON.parse(jqXHR.responseText).error);
+        }
+
+        function updateUser(name) {
+            let password = gfCommon.getNonEmptyInput("Input new password for user '" + name + "':");
+            if (password !== null) {
+                $.ajax({
+                    method: 'PUT',
+                    url: '/user/' + name,
+                    contentType: 'application/json; charset=utf-8',
+                    headers: {Authorization: 'JWT ' + localStorage.getItem('access_token')},
+                    data: JSON.stringify({
+                        name: name,
+                        password: password
+                    }),
+                    dataType: 'json',
+                    error: ajaxError,
+                }).done(ajaxSuccess);
+            }
+        }
+
+        function deleteUser(name) {
+            let r = confirm("Delete user '" + name + "' ?");
+            if (r === true) {
+                $.ajax({
+                    method: 'DELETE',
+                    url: '/user/' + name,
+                    contentType: 'application/json; charset=utf-8',
+                    headers: {Authorization: 'JWT ' + localStorage.getItem('access_token')},
+                    error: ajaxError,
+                }).done(ajaxSuccess);
+            }
+        }
+
+        $('#addUser').on('submit', addUser).hide();
+        $('#userTable').DataTable();
+        $("#manageUser").click(function () {
+            let n = 0;
+            return function () {
+                if (++n % 2 === 0) {
+                    $("#manageUser").text('Cancel');
+                    $("#addUser").show();
+                } else {
+                    $("#manageUser").text('Add User');
+                    $("#addUser").hide();
+                }
+            };
+        }());
+    </script>
+{% endblock %}

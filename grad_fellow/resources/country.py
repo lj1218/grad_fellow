@@ -41,23 +41,36 @@ class CountryResource(Resource):
         print('delete ' + str(country_id))
         return 'delete ' + country.name + ' success', 200
 
-    @marshal_with(country_fields)
     def put(self, country_id):
         """Put method."""
         # Update data (see http://www.bjhee.com/flask-ext4.html)
         args = parser.parse_args()
+        new_name = args['name']
         try:
             country = Country.query.filter_by(id=country_id).first()
+            country_ = Country.query.filter_by(name=new_name).first()
         except OperationalError:
             return [], 500
         print(country)
         if not country:
             return [], 403
-        country.name = args['name']
+        if country_:
+            return {'error': "Country '" + new_name +
+                             "' already exists"}, 409
+        country.name = new_name
         print(country)
-        db.session.add(country)
-        db.session.commit()
-        return country, 201
+        try:
+            db.session.add(country)
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return {'error': "Country '" + new_name +
+                             "' already exists"}, 409
+        except OperationalError as e:
+            print(e)
+            return {'error': 'OperationalError'}, 500
+
+        return marshal(country, country_fields), 201
 
     def post(self, country_id):
         """Post method."""
@@ -88,14 +101,14 @@ class CountriesResource(Resource):
         """Post method."""
         args = parser.parse_args()
         country = Country(name=args['name'])
-        db.session.add(country)
         try:
+            db.session.add(country)
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + country.name +
-                             "' for key 'name'"}, 201
+            return {'error': "Country '" + country.name +
+                             "' already exists"}, 409
         except OperationalError as e:
             print(e)
-            return {'error': 'OperationalError'}, 201
+            return {'error': 'OperationalError'}, 500
         return marshal(country, country_fields), 201

@@ -1,8 +1,0 @@
-{% block content %}
-  <h1>Delete Position</h1>
-  <form action="/position/{{ position_id }}" method="post" name="delete_position">
-      <input id="_method" name="_method" type="hidden" value="delete">
-      {{ form.csrf_token }}
-      <p><input type="submit" value="Submit"></p>
-  </form>
-{% endblock %}

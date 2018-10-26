@@ -39,5 +39,4 @@ def set_admin_password():
 
 def init_app(app):
     """Init admin.passwd module."""
-    db.init_app(app)
     app.cli.add_command(set_admin_password)

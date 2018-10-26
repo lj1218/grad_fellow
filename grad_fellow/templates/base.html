@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %} - GradFellow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% if g.user %}
+        <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    {% endif %}
+</head>
+<body>
+<nav>
+    <h1><a href="{{ url_for('index') }}">GradFellow Web Console</a></h1>
+    {% if g.user %}
+        <ul>
+            <li><span>{{ g.user['name'] }}</span></li>
+            <li>
+                <a href="javascript:void(0)" onclick="gfCommon.logout('{{ url_for('auth.logout') }}', 'access_token')">Log
+                    out</a></li>
+        </ul>
+    {% endif %}
+</nav>
+<section class="content">
+    <header>
+        {% block header %}{% endblock %}
+    </header>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</section>
+
+{% block script %}{% endblock %}
+
+</body>
+</html>

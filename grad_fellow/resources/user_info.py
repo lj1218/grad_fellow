@@ -130,16 +130,16 @@ class UserInfosResource(Resource):
             user_info = _new_user_info(username, args)
         else:
             _update_user_info(user_info, args)
-        db.session.add(user_info)
         try:
+            db.session.add(user_info)
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + user_info.name +
-                             "' for key 'name'"}, 201
+            return {'error': "User info for '" + user_info.name +
+                             "' already exists"}, 409
         except OperationalError as e:
             print(e)
-            return {'error': 'OperationalError'}, 201
+            return {'error': 'OperationalError'}, 500
         return marshal(user_info, user_info_fields), 201
 
 

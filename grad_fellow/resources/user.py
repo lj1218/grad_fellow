@@ -56,7 +56,7 @@ class UserResource(Resource):
         print(user)
         if not user:
             return [], 403
-        user.password = args['password']
+        user.password = generate_password_hash(args['password'])
         print(user)
         db.session.add(user)
         db.session.commit()
@@ -97,16 +97,16 @@ class UsersResource(Resource):
         name = args['name']
         password = args['password']
         if name == 'admin':
-            return {'error': 'user name cannot be admin'}, 400
+            return {'error': 'user name cannot be admin'}, 409
         user = User(name=name, password=generate_password_hash(password))
-        db.session.add(user)
         try:
+            db.session.add(user)
             db.session.commit()
         except IntegrityError as e:
             print(e)
-            return {'error': "Duplicate entry '" + user.name +
-                             "' for key 'name'"}, 201
+            return {'error': "User '" + user.name +
+                             "' already exists"}, 409
         except OperationalError as e:
             print(e)
-            return {'error': 'OperationalError'}, 201
+            return {'error': 'OperationalError'}, 500
         return marshal(user, user_fields), 201

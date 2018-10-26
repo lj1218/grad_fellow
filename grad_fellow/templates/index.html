@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h2>{% block title %}Navigation page{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        <li><a href="{{ url_for('administrator.manage') }}">Configure administrator</a></li>
+        <br>
+        <li><a href="{{ url_for('user.manage') }}">Configure user</a></li>
+        <br>
+        <li><a href="{{ url_for('country.manage') }}">Configure country</a></li>
+        <br>
+        <li><a href="{{ url_for('position.manage') }}">Configure position</a></li>
+    </ul>
+{% endblock %}

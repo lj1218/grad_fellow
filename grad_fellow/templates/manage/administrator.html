@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h2>{% block title %}Administrator Management{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+    {% if g.user %}
+        <div>
+            <br>
+            <form id="update">
+                <label for="password">Administrator Password</label>
+                <input name="password" id="password" required>
+                <input class="button button4" type="submit" value="Submit">
+            </form>
+            <hr>
+            <br>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+    <script src="{{ url_for('static', filename='jquery/jquery-3.3.1.min.js') }}"></script>
+
+    <script>
+        function update(ev) {
+            ev.preventDefault();
+            let password = $.trim($('#password').val());
+            if (password === '') {
+                alert('Password is empty!');
+                return;
+            }
+            $.ajax({
+                method: 'PUT',
+                url: '/administrator/' + '{{ g.user['name'] }}',
+                contentType: 'application/json; charset=utf-8',
+                headers: {Authorization: 'JWT ' + localStorage.getItem('access_token')},
+                data: JSON.stringify({
+                    name: '{{ g.user['name'] }}',
+                    password: password
+                }),
+                dataType: 'json',
+                error: ajaxError,
+            }).done(ajaxSuccess);
+        }
+
+        function ajaxSuccess(data) {
+            console.log(data.toString());
+            alert('Password updated, and you will be logged out.');
+            gfCommon.logout('{{ url_for('auth.logout') }}', 'access_token');
+        }
+
+        function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error(jqXHR.responseText);
+            alert(JSON.parse(jqXHR.responseText).error);
+        }
+
+        $('#update').on('submit', update);
+    </script>
+{% endblock %}

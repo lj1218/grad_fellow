@@ -25,7 +25,9 @@ rules_forbidden = {
 rules_forbidden_with_path_var = {
     'admin': {
         'GET': [],
-        'POST': []
+        'POST': [],
+        'PUT': [],
+        'DELETE': [],
     },
     'others': {
         'GET': [
