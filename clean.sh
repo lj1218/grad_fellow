@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-[ ! -d build ] && exit
+[ ! -d build ]
 rm -rf build/
 rm -rf dist/
-rm -rf grad_fellow.egg-info/
+rm -rf Grad_Fellow.egg-info/
 echo "cleaned"

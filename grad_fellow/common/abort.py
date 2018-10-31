@@ -2,7 +2,7 @@
 """Abort functions."""
 from sqlalchemy.exc import OperationalError
 
-from ..models import Country, Position, User, UserInfo
+from ..models import Administrator, Country, Position, User, UserInfo
 
 
 def __abort_if_data_doesnt_exist(abort, model, field_name, field_val, by='id'):
@@ -31,6 +31,13 @@ def abort_if_position_doesnt_exist(abort, position_id):
     """Abort if position doesn't exist."""
     return __abort_if_data_doesnt_exist(
         abort, Position, 'position_id', position_id
+    )
+
+
+def abort_if_administrator_doesnt_exist(abort, name):
+    """Abort if administrator doesn't exist."""
+    return __abort_if_data_doesnt_exist(
+        abort, Administrator, 'administrator', name, by='name'
     )
 
 

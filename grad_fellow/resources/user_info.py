@@ -3,10 +3,11 @@
 from flask_jwt import current_identity, jwt_required
 from flask_restful import (Resource, abort, fields, marshal, marshal_with,
                            reqparse)
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import OperationalError
 
 from ..common.abort import abort_if_user_info_doesnt_exist
 from ..db import db
+from ..logger import logger
 from ..models import UserInfo
 
 user_info_fields = {
@@ -61,24 +62,26 @@ class UserInfoResource(Resource):
         user_info = abort_if_user_info_doesnt_exist(abort, name)
         db.session.delete(user_info)
         db.session.commit()
-        print('delete ' + str(name))
-        return 'delete ' + user_info.name + ' success', 200
+        logger.info('delete ' + str(name))
+        return {'msg': 'delete ' + user_info.name + ' success'}, 200
 
     @marshal_with(user_info_fields)
-    def post(self, name):
-        """Post method."""
+    def put(self, name):
+        """Put method."""
         # Update data (see http://www.bjhee.com/flask-ext4.html)
-        parser = UserInfosResource.get_parser()
-        args = parser.parse_args()
+        args = get_parser().parse_args()
         user = current_identity
         username = user.username
-        print('UserInfoResource.put - username: ' + username)
-        user_info = UserInfo.query.filter_by(name=username).first()
-        if user_info is None:
-            user_info = _new_user_info(username, args)
-        else:
-            _update_user_info(user_info, args)
-        print(user_info)
+        logger.debug('UserInfoResource.put - username: ' + username)
+        try:
+            user_info = UserInfo.query.filter_by(name=name).first()
+        except OperationalError:
+            return [], 500
+        logger.debug(user_info)
+        if not user_info:
+            return [], 403
+        _update_user_info(user_info, args)
+        logger.debug(user_info)
         db.session.add(user_info)
         db.session.commit()
         return user_info, 201
@@ -124,7 +127,7 @@ class UserInfosResource(Resource):
         args = get_parser().parse_args()
         user = current_identity
         username = user.username
-        print('UserInfosResource.post - username: ' + username)
+        logger.debug('UserInfosResource.post - username: ' + username)
         user_info = UserInfo.query.filter_by(name=username).first()
         if user_info is None:
             user_info = _new_user_info(username, args)
@@ -133,20 +136,14 @@ class UserInfosResource(Resource):
         try:
             db.session.add(user_info)
             db.session.commit()
-        except IntegrityError as e:
-            print(e)
-            return {'error': "User info for '" + user_info.name +
-                             "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
         return marshal(user_info, user_info_fields), 201
 
 
 def _new_user_info(username, args):
     """Create UserInfo instance."""
-    print('type(args): ' + str(type(args)))
-    print(str(args))
     if args['tobe_contacted'] == 'True':
         tobe_contacted = True
     else:

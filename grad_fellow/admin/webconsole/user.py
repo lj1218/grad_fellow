@@ -5,7 +5,9 @@ from flask import Blueprint, render_template
 from ...models import User
 from .auth import login_required
 
-bp = Blueprint('user', __name__, url_prefix='/admin/user')
+url_prefix = '/admin/user'
+bp = Blueprint('user', __name__, url_prefix=url_prefix)
+block_title = 'User Management'
 
 
 @bp.route('/')
@@ -13,4 +15,6 @@ bp = Blueprint('user', __name__, url_prefix='/admin/user')
 def manage():
     """Manage user."""
     users = User.query.all()
-    return render_template('manage/user.html', users=users)
+    return render_template(
+        'manage/user.html', block_title=block_title, users=users
+    )

@@ -5,6 +5,7 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
 from .common.acl import check_access_permission
+from .logger import logger
 from .models import Administrator, User
 
 
@@ -16,10 +17,10 @@ def init_app(app):
 
 def _authenticate(username, password):
     """Authenticate handler."""
-    print('authenticate: {}:{}'.format(username, password))
+    logger.info('authenticate: {}:{}'.format(username, password))
     user = User4Auth(username)
     if not user.verify_password(password):
-        print('fail')
+        logger.info('fail')
         return
     return user
 
@@ -28,23 +29,21 @@ def _identity(payload):
     """Identity handler."""
     user_id = payload['identity']
     username = user_id[0]
-    print('username: ' + username)
+    logger.info('username: ' + username)
     password = user_id[1]
     if not check_access_permission(username):
-        return None
-    if not password:
         return None
     user = None
     if username == 'admin':
         try:
             user = Administrator.query.filter_by(name=username).first()
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
     else:
         try:
             user = User.query.filter_by(name=username).first()
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
     if user and password == user.password:
         return User4Auth(username)
     return None
@@ -62,7 +61,7 @@ def __verify_password(model, user_name, password):
     try:
         user = model.query.filter_by(name=user_name).first()
     except OperationalError as e:
-        print(e)
+        logger.error(str(e))
         return False
     if not user:
         return False
@@ -89,12 +88,12 @@ class User4Auth(object):
                 user = Administrator.query.filter_by(
                     name=self.username).first()
             except OperationalError as e:
-                print(e)
+                logger.error(str(e))
         else:
             try:
                 user = User.query.filter_by(name=self.username).first()
             except OperationalError as e:
-                print(e)
+                logger.error(str(e))
         password = user and user.password
         return [self.username, password]
 

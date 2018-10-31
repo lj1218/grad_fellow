@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash
 
 from ..common.abort import abort_if_user_doesnt_exist
 from ..db import db
+from ..logger import logger
 from ..models import User
 
 user_fields = {
@@ -38,26 +39,25 @@ class UserResource(Resource):
         user = abort_if_user_doesnt_exist(abort, name)
         db.session.delete(user)
         db.session.commit()
-        print('delete ' + str(name))
-        return 'delete ' + user.name + ' success', 200
+        logger.info('delete ' + str(name))
+        return {'msg': 'delete ' + user.name + ' success'}, 200
 
     @marshal_with(user_fields)
     def put(self, name):
         """Put method."""
         # Update data (see http://www.bjhee.com/flask-ext4.html)
         parser = reqparse.RequestParser()
-        parser.add_argument('name')
         parser.add_argument('password')
         args = parser.parse_args()
         try:
             user = User.query.filter_by(name=name).first()
         except OperationalError:
             return [], 500
-        print(user)
+        logger.debug(user)
         if not user:
             return [], 403
         user.password = generate_password_hash(args['password'])
-        print(user)
+        logger.debug(user)
         db.session.add(user)
         db.session.commit()
         return user, 201
@@ -103,10 +103,10 @@ class UsersResource(Resource):
             db.session.add(user)
             db.session.commit()
         except IntegrityError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': "User '" + user.name +
                              "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
         return marshal(user, user_fields), 201

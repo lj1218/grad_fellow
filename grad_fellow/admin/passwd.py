@@ -6,19 +6,20 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.security import generate_password_hash
 
 from ..db import db
+from ..logger import logger
 from ..models import Administrator
 
 
 @click.command('set-admin-password')
+@click.option('--password', default='1', prompt='password',
+              help='Set password for admin.')
 @with_appcontext
-def set_admin_password():
+def set_admin_password(password):
     """Set password for admin."""
-    # password = raw_input("Input password for admin: ")  # python2
-    password = input("Input password for admin: ")
     try:
         admin = Administrator.query.filter_by(name='admin').first()
     except OperationalError as e:
-        print(e)
+        logger.error(str(e))
         return False
 
     password_hash = generate_password_hash(password)
@@ -31,7 +32,7 @@ def set_admin_password():
     try:
         db.session.commit()
     except OperationalError as e:
-        print(e)
+        logger.error(str(e))
         return False
     print('set password to {} success'.format(password))
     return True

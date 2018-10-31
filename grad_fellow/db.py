@@ -7,12 +7,22 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+def init_db():
+    """Clear existing data and create new tables."""
+    clear_db()
+    db.create_all()
+
+
+def clear_db():
+    """Clear existing data."""
+    db.drop_all()
+
+
 @click.command('init-db')
 @with_appcontext
 def init_db_command():
     """Initialize the database."""
-    db.drop_all()
-    db.create_all()
+    init_db()
     click.echo('Initialized the database.')
 
 

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 """Grad fellow package."""
 import os
+import logging
 
 from datetime import timedelta
 from flask import Blueprint, Flask
@@ -9,6 +10,7 @@ from flask_restful import Api
 
 from . import auth, db
 from .admin import passwd
+from .common.logger import setup_logger
 from .common.util import save_pid
 from .resources.administrator import AdminResource
 from .resources.country import CountriesResource, CountryResource
@@ -16,7 +18,7 @@ from .resources.position import PositionResource, PositionsResource
 from .resources.user import UserResource, UsersResource
 from .resources.user_info import UserInfoResource, UserInfosResource
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 def create_app(test_config=None):
@@ -38,6 +40,11 @@ def create_app(test_config=None):
         JWT_AUTH_URL_RULE='/login',
 
         JWT_EXPIRATION_DELTA=timedelta(seconds=1800),
+
+        # logger
+        LOGGER_CMD_LEVEL=logging.DEBUG,
+        LOGGER_FILE_LEVEL=logging.DEBUG,
+        LOGGER_ROTATING_FILE_CONF={},
     )
 
     if test_config is None:
@@ -46,6 +53,8 @@ def create_app(test_config=None):
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    setup_logger(app)
 
     # ensure the instance folder exists
     try:

@@ -7,6 +7,7 @@ from flask import (Blueprint, g, redirect, render_template, request, session,
                    url_for)
 
 from ...auth import User4Auth
+from ...logger import logger
 from ...models import Administrator
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -31,7 +32,7 @@ def load_logged_in_user():
     the database into ``g.user``.
     """
     username = session.get('name')
-    print('load_logged_in_user: ' + str(username))
+    logger.info('load_logged_in_user: ' + str(username))
 
     if username is None:
         g.user = None
@@ -62,7 +63,7 @@ def login():
             status_code = 401
             result = {'status': 1, 'error': error}
 
-        print(json.dumps(result))
+        logger.info(json.dumps(result))
         return json.dumps(result), status_code
 
     return render_template('auth/login.html')

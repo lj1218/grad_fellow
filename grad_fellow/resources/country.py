@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..common.abort import abort_if_country_doesnt_exist
 from ..db import db
+from ..logger import logger
 from ..models import Country
 
 country_fields = {
@@ -38,8 +39,8 @@ class CountryResource(Resource):
         country = abort_if_country_doesnt_exist(abort, country_id)
         db.session.delete(country)
         db.session.commit()
-        print('delete ' + str(country_id))
-        return 'delete ' + country.name + ' success', 200
+        logger.info('delete ' + str(country_id))
+        return {'msg': 'delete ' + country.name + ' success'}, 200
 
     def put(self, country_id):
         """Put method."""
@@ -48,26 +49,22 @@ class CountryResource(Resource):
         new_name = args['name']
         try:
             country = Country.query.filter_by(id=country_id).first()
-            country_ = Country.query.filter_by(name=new_name).first()
         except OperationalError:
             return [], 500
-        print(country)
+        logger.debug(country)
         if not country:
             return [], 403
-        if country_:
-            return {'error': "Country '" + new_name +
-                             "' already exists"}, 409
         country.name = new_name
-        print(country)
+        logger.debug(country)
         try:
             db.session.add(country)
             db.session.commit()
         except IntegrityError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': "Country '" + new_name +
                              "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
 
         return marshal(country, country_fields), 201
@@ -105,10 +102,10 @@ class CountriesResource(Resource):
             db.session.add(country)
             db.session.commit()
         except IntegrityError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': "Country '" + country.name +
                              "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
         return marshal(country, country_fields), 201

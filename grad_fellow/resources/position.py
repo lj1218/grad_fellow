@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..common.abort import abort_if_position_doesnt_exist
 from ..db import db
+from ..logger import logger
 from ..models import Position
 
 position_fields = {
@@ -38,8 +39,8 @@ class PositionResource(Resource):
         position = abort_if_position_doesnt_exist(abort, position_id)
         db.session.delete(position)
         db.session.commit()
-        print('delete ' + str(position_id))
-        return 'delete ' + position.name + ' success', 200
+        logger.info('delete ' + str(position_id))
+        return {'msg': 'delete ' + position.name + ' success'}, 200
 
     def put(self, position_id):
         """Put method."""
@@ -48,26 +49,22 @@ class PositionResource(Resource):
         new_name = args['name']
         try:
             position = Position.query.filter_by(id=position_id).first()
-            position_ = Position.query.filter_by(name=new_name).first()
         except OperationalError:
             return [], 500
-        print(position)
+        logger.debug(position)
         if not position:
             return [], 403
-        if position_:
-            return {'error': "Position '" + new_name +
-                             "' already exists"}, 409
         position.name = new_name
-        print(position)
+        logger.debug(position)
         try:
             db.session.add(position)
             db.session.commit()
         except IntegrityError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': "Position '" + new_name +
                              "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
 
         return marshal(position, position_fields), 201
@@ -105,10 +102,10 @@ class PositionsResource(Resource):
             db.session.add(position)
             db.session.commit()
         except IntegrityError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': "Position '" + position.name +
                              "' already exists"}, 409
         except OperationalError as e:
-            print(e)
+            logger.error(str(e))
             return {'error': 'OperationalError'}, 500
         return marshal(position, position_fields), 201
