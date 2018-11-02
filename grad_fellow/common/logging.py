@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-"""Logger module."""
+"""Logging module."""
 import logging
 import logging.handlers
 
@@ -22,13 +22,11 @@ def init_logger(name_list=None, cmd_level=logging.INFO,
                 file_level=logging.DEBUG, rotating_file_conf=None,
                 propagate=True):
     """Init logger."""
-    logger = None
     for name in name_list:
         logger = logging.getLogger(name)
         logger.propagate = propagate
         configure_logging(logger, cmd_level, file_level,
                           rotating_file_conf)
-    return logger
 
 
 def configure_flask_logging(app):
