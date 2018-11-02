@@ -1,13 +1,10 @@
 # -*- coding:utf-8 -*-
 """Configuration for test."""
-import json
-
 import pytest
 from werkzeug.security import generate_password_hash
 
 from grad_fellow import create_app
 from grad_fellow.db import clear_db, db, init_db
-from grad_fellow.logger import logger
 from grad_fellow.models import Administrator, Country, Position, User, UserInfo
 
 db_username = 'root'
@@ -62,8 +59,7 @@ class AuthActions(object):
         """Login web console."""
         return self._client.post(
             '/auth/login',
-            content_type='application/json',
-            data=json.dumps({'username': username, 'password': password})
+            json={'username': username, 'password': password}
         )
 
     def login_as_admin(self):
@@ -99,11 +95,10 @@ class JwtAuthActions(object):
         """Login jwt."""
         response = self._client.post(
             '/login',
-            content_type='application/json',
-            data=json.dumps({'username': username, 'password': password})
+            json={'username': username, 'password': password}
         )
         if response.status_code == 200:
-            self._access_token = json.loads(response.data).get('access_token')
+            self._access_token = response.get_json().get('access_token')
         return response
 
     def login_as_admin(self):
@@ -119,30 +114,27 @@ class JwtAuthActions(object):
             headers={'Authorization': 'JWT ' + str(self._access_token)}
         )
 
-    def put(self, url, data):
+    def put(self, url, json):
         """Put method."""
         return self._client.put(
             url,
             headers={'Authorization': 'JWT ' + str(self._access_token)},
-            content_type='application/json',
-            data=json.dumps(data)
+            json=json
         )
 
-    def post(self, url, data):
+    def post(self, url, json):
         """Post method."""
         return self._client.post(
             url,
             headers={'Authorization': 'JWT ' + str(self._access_token)},
-            content_type='application/json',
-            data=json.dumps(data)
+            json=json
         )
 
     def delete(self, url):
         """Delete method."""
         return self._client.delete(
             url,
-            headers={'Authorization': 'JWT ' + str(self._access_token)},
-            content_type='application/json'
+            headers={'Authorization': 'JWT ' + str(self._access_token)}
         )
 
     def logout(self):
@@ -163,7 +155,7 @@ def db_add_and_commit(db_, model):
         db_.session.add(model)
         db_.session.commit()
     except OperationalError as e:
-        logger.error(str(e))
+        print(str(e))
         exit(1)
 
 

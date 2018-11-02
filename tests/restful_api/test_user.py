@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
 """Test user."""
-import json
-
 import pytest
 
 
@@ -32,8 +30,9 @@ def test_get_method(jwt_auth, username, status_code, msgs):
     response = jwt_auth.get(url)
     assert response.status_code == status_code
     if msgs:
+        resp_data = str(response.get_json())
         for msg in msgs:
-            assert msg in str(json.loads(response.data))
+            assert msg in resp_data
 
 
 @pytest.mark.parametrize(
@@ -56,7 +55,7 @@ def test_post_method(jwt_auth, username, password, status_code, msg):
     response = jwt_auth.post(url, {'name': username, 'password': password})
     assert response.status_code == status_code
     if msg:
-        assert msg in str(json.loads(response.data))
+        assert msg in str(response.get_json())
 
 
 @pytest.mark.parametrize(
@@ -100,45 +99,52 @@ def test_put_method2(jwt_auth, username, password, status_code, msg):
         assert msg in str(response.data)
 
 
-def clear_table_user_info(jwt_auth):
-    """Clear tale 'user_info'."""
-    for username in ('test', 'test2'):
-        assert jwt_auth.delete('userinfo/' + username).status_code == 200
+def clear_table_user_info(jwt_auth, username):
+    """Clear item in table 'user_info'."""
+    assert jwt_auth.delete('userinfo/' + username).status_code == 200
 
 
 @pytest.mark.parametrize(
-    ('username', 'status_code'),
+    ('username', 'clear_user_info', 'status_code'),
     (
             # user not exists
-            ('user_not_exists', 404),
+            ('user_not_exists', False, 404),
 
             # delete user 'test'
-            ('test', 200),
+            ('test', True, 200),
+
+            # delete user 'test'
+            ('test', False, 409),
     )
 )
-def test_delete_method(jwt_auth, username, status_code):
+def test_delete_method(jwt_auth, username, clear_user_info, status_code):
     """Test method 'DELETE'."""
     jwt_auth.login_as_admin()
-    clear_table_user_info(jwt_auth)
+    if clear_user_info:
+        clear_table_user_info(jwt_auth, username)
     url = '/user'
     response = jwt_auth.post(url + '/' + username, {'_method': 'delete'})
     assert response.status_code == status_code
 
 
 @pytest.mark.parametrize(
-    ('username', 'status_code'),
+    ('username', 'clear_user_info', 'status_code'),
     (
             # user not exists
-            ('user_not_exists', 404),
+            ('user_not_exists', False, 404),
 
             # delete user 'test'
-            ('test', 200),
+            ('test', True, 200),
+
+            # delete user 'test'
+            ('test', False, 409),
     )
 )
-def test_delete_method2(jwt_auth, username, status_code):
+def test_delete_method2(jwt_auth, username, clear_user_info, status_code):
     """Test method 'DELETE2'."""
     jwt_auth.login_as_admin()
-    clear_table_user_info(jwt_auth)
+    if clear_user_info:
+        clear_table_user_info(jwt_auth, username)
     url = '/user'
     response = jwt_auth.delete(url + '/' + username)
     assert response.status_code == status_code

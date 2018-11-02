@@ -18,7 +18,7 @@ from .resources.position import PositionResource, PositionsResource
 from .resources.user import UserResource, UsersResource
 from .resources.user_info import UserInfoResource, UserInfosResource
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 
 def create_app(test_config=None):

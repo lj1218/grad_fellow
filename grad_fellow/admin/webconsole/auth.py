@@ -64,7 +64,8 @@ def login():
             result = {'status': 1, 'error': error}
 
         logger.info(json.dumps(result))
-        return json.dumps(result), status_code
+        return json.dumps(result), status_code, \
+            {'Content-Type': 'application/json'}
 
     return render_template('auth/login.html')
 

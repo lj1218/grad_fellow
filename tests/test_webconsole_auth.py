@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
 """Test web console auth."""
-import json
-
 import pytest
 from flask import g, session
 
@@ -20,7 +18,7 @@ def test_login(client, auth):
 
     # test that successful login redirects to the index page
     response = auth.login_as_admin()
-    resp_data = json.loads(response.data)
+    resp_data = response.get_json()
     assert resp_data['status'] == 0
     assert resp_data['next'] == '/'
 

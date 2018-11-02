@@ -37,8 +37,13 @@ class UserResource(Resource):
     def delete(self, name):
         """Delete method."""
         user = abort_if_user_doesnt_exist(abort, name)
-        db.session.delete(user)
-        db.session.commit()
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except IntegrityError as e:
+            logger.error(str(e))
+            return {'error': "Cannot delete: a foreign key" +
+                             " constraint fails"}, 409
         logger.info('delete ' + str(name))
         return {'msg': 'delete ' + user.name + ' success'}, 200
 

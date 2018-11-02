@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
 """Test country."""
-import json
-
 import pytest
 
 
@@ -31,8 +29,9 @@ def test_get_method(client, country_id, status_code, msgs):
     response = client.get(url)
     assert response.status_code == status_code
     if msgs:
+        resp_data = str(response.get_json())
         for msg in msgs:
-            assert msg in str(json.loads(response.data))
+            assert msg in resp_data
 
 
 @pytest.mark.parametrize(
@@ -52,7 +51,7 @@ def test_post_method(jwt_auth, country, status_code, msg):
     response = jwt_auth.post(url, {'name': country})
     assert response.status_code == status_code
     if msg:
-        assert msg in str(json.loads(response.data))
+        assert msg in str(response.get_json())
 
 
 @pytest.mark.parametrize(
