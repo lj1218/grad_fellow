@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 """RESTful resource: Administrator."""
+import logging
+
 from flask_jwt import jwt_required
 from flask_restful import Resource, abort, fields, marshal_with, reqparse
 from sqlalchemy.exc import OperationalError
@@ -7,8 +9,9 @@ from werkzeug.security import generate_password_hash
 
 from ..common.abort import abort_if_administrator_doesnt_exist
 from ..db import db
-from ..logger import logger
 from ..models import Administrator
+
+logger = logging.getLogger(__name__)
 
 admin_fields = {
     'id': fields.Integer,

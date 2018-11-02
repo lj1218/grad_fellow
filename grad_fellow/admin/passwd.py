@@ -1,13 +1,16 @@
 # -*- coding:utf-8 -*-
 """Set password for administrator."""
+import logging
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import generate_password_hash
 
 from ..db import db
-from ..logger import logger
 from ..models import Administrator
+
+logger = logging.getLogger(__name__)
 
 
 @click.command('set-admin-password')

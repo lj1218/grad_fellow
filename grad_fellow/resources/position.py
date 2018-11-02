@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 """RESTful resource: Position."""
+import logging
+
 from flask_jwt import jwt_required
 from flask_restful import (Resource, abort, fields, marshal, marshal_with,
                            reqparse)
@@ -7,8 +9,9 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..common.abort import abort_if_position_doesnt_exist
 from ..db import db
-from ..logger import logger
 from ..models import Position
+
+logger = logging.getLogger(__name__)
 
 position_fields = {
     'id': fields.Integer,

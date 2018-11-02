@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 """RESTful resource: User."""
+import logging
+
 from flask_jwt import jwt_required
 from flask_restful import (Resource, abort, fields, marshal, marshal_with,
                            reqparse)
@@ -8,8 +10,9 @@ from werkzeug.security import generate_password_hash
 
 from ..common.abort import abort_if_user_doesnt_exist
 from ..db import db
-from ..logger import logger
 from ..models import User
+
+logger = logging.getLogger(__name__)
 
 user_fields = {
     'id': fields.Integer,

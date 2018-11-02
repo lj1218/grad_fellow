@@ -1,12 +1,15 @@
 # -*- coding:utf-8 -*-
 """Authentication."""
+import logging
+
 from flask_jwt import JWT
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
 from .common.acl import check_access_permission
-from .logger import logger
 from .models import Administrator, User
+
+logger = logging.getLogger(__name__)
 
 
 def init_app(app):
@@ -17,7 +20,7 @@ def init_app(app):
 
 def _authenticate(username, password):
     """Authenticate handler."""
-    logger.info('authenticate: {}:{}'.format(username, password))
+    logger.debug('authenticate: {}:{}'.format(username, '*' * len(password)))
     user = User4Auth(username)
     if not user.verify_password(password):
         logger.info('fail')

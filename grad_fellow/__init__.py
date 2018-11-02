@@ -1,16 +1,16 @@
 # -*- coding:utf-8 -*-
-"""Grad fellow package."""
-import os
+"""Grad fellow application."""
 import logging
-
+import os
 from datetime import timedelta
+
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from flask_restful import Api
 
 from . import auth, db
 from .admin import passwd
-from .common.logger import setup_logger
+from .common.logging import configure_flask_logging, init_logger
 from .common.util import save_pid
 from .resources.administrator import AdminResource
 from .resources.country import CountriesResource, CountryResource
@@ -18,7 +18,10 @@ from .resources.position import PositionResource, PositionsResource
 from .resources.user import UserResource, UsersResource
 from .resources.user_info import UserInfoResource, UserInfosResource
 
-__version__ = '1.0.3'
+__version__ = '1.0.4'
+
+init_logger([__name__, 'flask_jwt'], logging.DEBUG,
+            rotating_file_conf={}, propagate=False)
 
 
 def create_app(test_config=None):
@@ -54,7 +57,7 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    setup_logger(app)
+    configure_flask_logging(app)
 
     # ensure the instance folder exists
     try:

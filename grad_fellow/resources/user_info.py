@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 """RESTful resource: UserInfo."""
+import logging
+
 from flask_jwt import current_identity, jwt_required
 from flask_restful import (Resource, abort, fields, marshal, marshal_with,
                            reqparse)
@@ -7,8 +9,9 @@ from sqlalchemy.exc import OperationalError
 
 from ..common.abort import abort_if_user_info_doesnt_exist
 from ..db import db
-from ..logger import logger
 from ..models import UserInfo
+
+logger = logging.getLogger(__name__)
 
 user_info_fields = {
     'id': fields.Integer,

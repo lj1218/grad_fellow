@@ -2,14 +2,15 @@
 """Auth for web console."""
 import functools
 import json
+import logging
 
 from flask import (Blueprint, g, redirect, render_template, request, session,
                    url_for)
 
 from ...auth import User4Auth
-from ...logger import logger
 from ...models import Administrator
 
+logger = logging.getLogger(__name__)
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
@@ -32,7 +33,8 @@ def load_logged_in_user():
     the database into ``g.user``.
     """
     username = session.get('name')
-    logger.info('load_logged_in_user: ' + str(username))
+    if not request.path.startswith('/static/'):
+        logger.debug('load_logged_in_user: ' + str(username))
 
     if username is None:
         g.user = None

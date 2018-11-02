@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 """Access control list."""
+import logging
+
 from flask import request
 
-from ..logger import logger
+logger = logging.getLogger(__name__)
 
 rules_forbidden = {
     'admin': {
