@@ -2,9 +2,9 @@
 
 ## Documents
 
-* [Project Design](doc/TestReport.md)
+* [Project Design](doc/ProjectDesign.md)
 
-* [REST API](doc/apidoc/apidoc.html)
+* [REST API](doc/apidoc/)
 
 * [Test Report](doc/TestReport.md)
 
