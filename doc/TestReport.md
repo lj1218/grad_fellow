@@ -2,10 +2,10 @@
 
 | Module                                         | statements | missing | branches | partial  | coverage |
 | :--------------------------------------------- | ---------: | ------: | -------: | -------: | -------: |
-| grad_fellow/__init__.py                        |         71 |       0 |        2 |        0 |     100% |
-| grad_fellow/admin/__init__.py                  |          0 |       0 |        0 |        0 |     100% |
+| grad_fellow/\__init\__.py                      |         71 |       0 |        2 |        0 |     100% |
+| grad_fellow/admin/\__init\__.py                |          0 |       0 |        0 |        0 |     100% |
 | grad_fellow/admin/passwd.py                    |         31 |       6 |        2 |        0 |      82% |
-| grad_fellow/admin/webconsole/__init__.py       |          0 |       0 |        0 |        0 |     100% |
+| grad_fellow/admin/webconsole/\__init\__.py     |          0 |       0 |        0 |        0 |     100% |
 | grad_fellow/admin/webconsole/administrator.py  |          9 |       0 |        0 |        0 |     100% |
 | grad_fellow/admin/webconsole/auth.py           |         46 |       0 |       14 |        1 |      98% |
 | grad_fellow/admin/webconsole/country.py        |         11 |       0 |        0 |        0 |     100% |
@@ -13,19 +13,19 @@
 | grad_fellow/admin/webconsole/position.py       |         11 |       0 |        0 |        0 |     100% |
 | grad_fellow/admin/webconsole/user.py           |         11 |       0 |        0 |        0 |     100% |
 | grad_fellow/auth.py                            |         74 |      12 |       14 |        0 |      86% |
-| grad_fellow/common/__init__.py                 |          0 |       0 |        0 |        0 |     100% |
+| grad_fellow/common/\__init\__.py               |          0 |       0 |        0 |        0 |     100% |
 | grad_fellow/common/abort.py                    |         25 |       1 |        6 |        1 |      94% |
 | grad_fellow/common/acl.py                      |         37 |       0 |       12 |        0 |     100% |
 | grad_fellow/common/logging.py                  |         38 |       0 |        4 |        0 |     100% |
 | grad_fellow/common/util.py                     |         23 |       7 |        4 |        1 |      63% |
 | grad_fellow/db.py                              |         17 |       0 |        0 |        0 |     100% |
-| grad_fellow/models/__init__.py                 |          5 |       0 |        0 |        0 |     100% |
+| grad_fellow/models/\__init\__.py               |          5 |       0 |        0 |        0 |     100% |
 | grad_fellow/models/administrator.py            |          8 |       0 |        0 |        0 |     100% |
 | grad_fellow/models/country.py                  |          7 |       0 |        0 |        0 |     100% |
 | grad_fellow/models/position.py                 |          7 |       0 |        0 |        0 |     100% |
 | grad_fellow/models/user.py                     |          8 |       0 |        0 |        0 |     100% |
 | grad_fellow/models/user_info.py                |         24 |       0 |        0 |        0 |     100% |
-| grad_fellow/resources/__init__.py              |          0 |       0 |        0 |        0 |     100% |
+| grad_fellow/resources/\__init\__.py            |          0 |       0 |        0 |        0 |     100% |
 | grad_fellow/resources/administrator.py         |         35 |       2 |        0 |        0 |      94% |
 | grad_fellow/resources/country.py               |         72 |       8 |       10 |        2 |      88% |
 | grad_fellow/resources/position.py              |         72 |       8 |       10 |        2 |      88% |
