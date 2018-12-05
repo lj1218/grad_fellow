@@ -34,7 +34,6 @@ setup(
         'flask_restful',
         'flask_sqlalchemy',
         'flask_jwt',
-        'flask_wtf',
         'mysqlclient',
         'waitress',
     ],
