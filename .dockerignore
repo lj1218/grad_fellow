@@ -1,0 +1,16 @@
+.git
+.github
+.coverage
+build
+dist
+doc
+sql
+tests
+instance
+htmlcov
+coverage-html
+docker/db_data
+*.egg-info
+*venv
+**/__pycache__
+*.pyc

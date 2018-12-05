@@ -2,6 +2,8 @@
 .DS_Store
 *.log
 my.pid
+/docker/config/config.py
+/docker/db_data/
 
 venv/
 

@@ -1,0 +1,12 @@
+FROM python:3
+ENV PYTHONUNBUFFERED 1
+
+ARG app_dir
+ARG start_script_parent_dir
+ARG start_script
+
+RUN mkdir $app_dir
+WORKDIR $app_dir
+ADD . $app_dir
+RUN sh build.sh && pip install dist/*.whl --no-cache-dir && \
+  cp $start_script_parent_dir/$start_script / && cd && rm -rf $app_dir && mkdir $app_dir && cp /$start_script $app_dir

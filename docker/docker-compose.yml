@@ -1,0 +1,39 @@
+version: "3"
+services:
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+       - ${DB_DATA}:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+
+  web:
+    build:
+      context: ..
+      dockerfile: ${CUR_DIR}/${DOCKER_FILE}
+      args:
+        app_dir: /grad_fellow
+        start_script_parent_dir: ${START_SCRIPT_PARENT_DIR}
+        start_script: ${START_SCRIPT}
+        http_proxy: "${HTTP_PROXY}"
+        https_proxy: "${HTTPS_PROXY}"
+    depends_on:
+      - db
+    command: sh ${START_SCRIPT}
+    environment:
+      port: ${WEB_LISTEN_PORT_CONTAINER}
+    volumes:
+      - ${CONFIG_DIR}:${INSTANCE_PREFIX}/var/${APP_NAME}-instance
+    ports:
+      - "${WEB_LISTEN_PORT_HOST}:${WEB_LISTEN_PORT_CONTAINER}"
+    links:
+      - db
+    healthcheck:
+      test: wget -q http://localhost:${WEB_LISTEN_PORT_CONTAINER} -O - >/dev/null || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
